@@ -1,8 +1,9 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, text, TIMESTAMP
+from sqlalchemy import Column, Integer, String
 
 # 生成orm基类
 Base = declarative_base()
+
 
 class keys(Base):
     __tablename__ = 'db_keys'  # 表名

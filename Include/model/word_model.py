@@ -5,13 +5,14 @@ from sqlalchemy import Column, Integer, String, DateTime, DECIMAL
 Base = declarative_base()
 
 
-class search(Base):
-    __tablename__ = 'db_search'  # 表名
+class word(Base):
+    __tablename__ = 'db_word'  # 表名
     id = Column(Integer, primary_key=True)
-    key_id = Column(Integer)
+    search_id = Column(Integer)
     key = Column(String(255))
-    total_count = Column(Integer)
-    total_ads_count = Column(Integer)
-    ori_totalCount = Column(Integer)
-    suggestion_algorithm = Column(Integer)
+    word = Column(String(255))
+    num = Column(Integer)
+    sold = Column(Integer)
+    history_sold = Column(Integer)
+    view_count = Column(Integer)
     create_time = Column(DateTime)
