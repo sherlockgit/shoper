@@ -1,12 +1,13 @@
 import math
 import time
 from datetime import datetime
-from encodings import unicode_escape
+
 
 import jieba
 import json
 import requests
 import pymysql
+import re
 
 # 首页搜索
 from sqlalchemy import create_engine
@@ -14,22 +15,29 @@ from sqlalchemy.orm import sessionmaker
 
 from Include.model import keys_model, search_model, product_model, word_model
 from Include.model.keys_model import keys
+from Include.utils import check_legal
 
 
 def index_spider():
     url = 'https://xiapi.xiapibuy.com/api/v2/search_items'
-    print('输入查询方式：relevancy:综合排名,ctime：最新,sales：最热销,price:价格')
+    print('输入查询方式：1:综合排名;2：最新;3：最热销;4:价格')
     by = input()
+
     if by == 1:
         by = 'relevancy'
+        search_type = '综合'
     elif by == 2:
         by = 'ctime'
+        search_type = '最新'
     elif by == 3:
         by = 'sales'
+        search_type = '最热销'
     elif by == 4:
         by = 'price'
+        search_type = '价格'
     else:
         by = 'relevancy'
+        search_type = '综合'
 
     print('输入关键字：')
     keyword = input()
@@ -39,14 +47,17 @@ def index_spider():
     if total_count > 300:
         total_count = 300
 
-    print('输入排序方式：asc:低到高,desc:高到低')
+    print('输入排序方式：2:低到高;1:高到低')
     order = input()
     if order == 1:
         order = 'desc'
+        order_type = '高到低'
     elif order == 2:
         order = 'asc'
+        order_type = '低到高'
     else:
         order = 'desc'
+        order_type = '高到低'
 
     limit = 50
     page_type = 'search'
@@ -91,6 +102,8 @@ def index_spider():
             search = search_model.search(
                 key_id=key_id,
                 key=keyword,
+                order_type=order_type,
+                search_type=search_type,
                 total_count=text.get('total_count'),
                 total_ads_count=text.get('total_ads_count'),
                 ori_totalCount=text.get('query_rewrite').get('ori_totalCount'),
@@ -145,7 +158,9 @@ def index_spider():
             # 分词
             words = list(jieba.cut(i.get('name'), cut_all=False))
             for word in words:
-                if word_dict[word] is None:
+                if not check_legal.is_legal(word):
+                    continue
+                if word_dict.get(word) is None:
                     word_m = word_model.word(
                         search_id=search_id,
                         key=keyword,
@@ -167,7 +182,7 @@ def index_spider():
         print('完成准备下一波')
         time.sleep(5)
     for words in word_dict:
-        session.add(words)
+        session.add(word_dict[words])
     session.commit()
     print('*****************成功********************')
 
@@ -178,7 +193,7 @@ def get(url, params, header):  # get请求
 
 
 def get_session():
-    engine = create_engine("mysql+pymysql://root:xunxiao123@192.168.1.112/gbm_shop",
+    engine = create_engine("mysql+pymysql://shoper:123456@localhost/shoper",
                            encoding='utf-8')
     session_class = sessionmaker(bind=engine)  # 创建与数据库的会话session class ,注意,这里返回给session的是个class,不是实例
     session = session_class()  # 生成session实例
@@ -186,4 +201,4 @@ def get_session():
 
 
 if __name__ == '__main__':
-    index_spider()
+     index_spider()
