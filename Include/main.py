@@ -19,7 +19,16 @@ from Include.utils import check_legal
 
 
 def index_spider():
-    url = 'https://xiapi.xiapibuy.com/api/v2/search_items'
+    tw_url = 'https://xiapi.xiapibuy.com/api/v2/search_items'
+    ph_prl = 'https://ph.xiapibuy.com/api/v2/search_items'
+
+    print('输入查询站点：1：台湾；2：菲律宾；')
+    site = input()
+    if site == '1':
+        url = tw_url
+    elif site == '2':
+        url = ph_prl
+
     print('输入查询方式：1:综合排名;2：最新;3：最热销;4:价格')
     by = input()
 
@@ -89,13 +98,13 @@ def index_spider():
             if len(key1) == 0:
                 keys1 = keys_model.keys(
                     key=keyword,
-                    site=1
+                    site=site
                 )
                 session.add(keys1)
                 session.flush()
                 key_id = keys1.id
             else:
-                key_id = key1[0]
+                key_id = key1[0].id
 
 
             # 构建搜索
@@ -188,7 +197,7 @@ def index_spider():
 
 
 def get(url, params, header):  # get请求
-    res = requests.get(url=url, params=params, headers=header)
+    res = requests.get(url=url, params=params, headers=header,verify=False)
     return res
 
 
